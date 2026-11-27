@@ -13,7 +13,10 @@ pub mod gate;
 pub mod jev;
 pub mod tool;
 
-pub use agent::{HumanApprover, LoopEvent, Message, Reasoner, ReasonerStep, ReasoningLoop};
+pub use agent::{
+    DenyApprover, HumanApprover, LoopEvent, Message, Reasoner, ReasonerStep, ReasoningLoop,
+    ScriptedReasoner,
+};
 pub use gate::{GateDecision, JevGate, JudgmentRecord};
 pub use jev::{JevClient, JudgmentProvider, Question, UnconfiguredProvider};
 pub use tool::{Tool, ToolCallIntent, ToolError, ToolRegistry};

@@ -27,4 +27,7 @@ solana-sdk = "3"
 solana-rpc-client = "3"
 solana-rpc-client-api = "3"
 solana-account-decoder = "3"
+# System-program instructions live in their own crate in the split SDK
+# (2.x pairs with the solana-sdk 3.0 generation: instruction/pubkey 3.x).
+solana-system-interface = "2"
 bincode = { version = "2", features = ["serde"] }

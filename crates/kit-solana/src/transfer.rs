@@ -8,7 +8,7 @@
 use base64::Engine;
 use solana_sdk::hash::Hash;
 use solana_sdk::pubkey::Pubkey;
-use solana_sdk::system_instruction;
+use solana_system_interface::instruction as system_instruction;
 use solana_sdk::transaction::Transaction;
 
 use crate::SolanaError;

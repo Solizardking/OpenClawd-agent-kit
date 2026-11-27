@@ -23,7 +23,6 @@
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use solana_sdk::hash::Hash;
 use solana_sdk::pubkey::Pubkey;
 
 use crate::client::SolanaClient;
@@ -86,7 +85,7 @@ impl StateProof for RpcStateProof {
             lamports: account.lamports,
             owner: account.owner.to_string(),
             executable: account.executable,
-            data_hash: Hash::new(&account.data).to_string(),
+            data_hash: solana_sdk::hash::hash(&account.data).to_string(),
         })
     }
 

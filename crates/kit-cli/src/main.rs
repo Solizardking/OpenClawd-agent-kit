@@ -124,7 +124,7 @@ impl Tool for DemoTransfer {
         "Transfer SOL to another wallet (consequential)"
     }
     fn input_schema(&self) -> Value {
-        json!({"type": "object", "properties": {"to": {"type": "string"}, "lamports": {"type": "integer"}})
+        json!({"type": "object", "properties": {"to": {"type": "string"}, "lamports": {"type": "integer"}}})
     }
     fn consequential(&self) -> bool {
         true

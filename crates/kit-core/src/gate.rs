@@ -28,7 +28,7 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use serde_json::{json, Value};
+use serde_json::json;
 use tokio::sync::Mutex;
 
 use crate::jev::{JudgmentProvider, Question};

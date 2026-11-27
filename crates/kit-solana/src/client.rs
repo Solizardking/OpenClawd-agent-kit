@@ -4,7 +4,6 @@ use serde::Deserialize;
 use serde_json::Value;
 use solana_account_decoder::UiAccountData;
 use solana_rpc_client::nonblocking::rpc_client::RpcClient;
-use solana_rpc_client_api::config::RpcAccountInfoConfig;
 use solana_rpc_client_api::request::TokenAccountsFilter;
 use solana_sdk::hash::Hash;
 use solana_sdk::pubkey::Pubkey;
@@ -97,11 +96,7 @@ impl SolanaClient {
             .expect("token program id is a valid pubkey");
         let accounts = self
             .rpc
-            .get_token_accounts_by_owner(
-                owner,
-                TokenAccountsFilter::ProgramId(program),
-                RpcAccountInfoConfig::default(),
-            )
+            .get_token_accounts_by_owner(owner, TokenAccountsFilter::ProgramId(program))
             .await
             .map_err(Self::rpc_err)?;
 
