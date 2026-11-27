@@ -1,58 +1,55 @@
-# Solana SVM
+# Solana
 
-The Solana module is the default OpenClawd SVM Kit surface. It exposes
-agent-callable tools for portfolio context, token actions, swaps, Pump.fun
-flows, and SVM-native market context.
+`kit-solana` is built on the modern split-crate SDK
+(`solana-sdk` / `solana-rpc-client` / `solana-rpc-client-api` 3.x) —
+no monolith, no web3.js-era types.
 
-## Tools
+## Reads
 
-```text
-perform_jupiter_swap(input_mint, input_amount, output_mint, slippage_bps)
-transfer_sol(to, amount)
-transfer_spl_token(to, amount, mint)
-get_public_key()
-get_sol_balance()
-get_spl_token_balance(mint)
-fetch_token_price(mint)
-get_portfolio()
-search_on_dex_screener(query)
-deploy_pump_fun_token(...)
-buy_pump_fun_token(mint, sol_amount, slippage_bps)
-sell_pump_fun_token(mint, token_amount)
+`SolanaClient` (from `SOLANA_RPC_URL`, or any endpoint you pass):
+
+- `balance(pubkey)` → lamports
+- `token_accounts(owner)` → SPL token accounts (mint, raw + UI amounts),
+  parsed from the RPC's jsonParsed encoding
+- `signature_status(signature)` → slot, confirmations, error,
+  confirmation status
+- `latest_blockhash()`, `slot()`, `get_account(pubkey)`
+
+## Building transfers
+
+```rust
+let tx = kit_solana::transfer::build_transfer(&payer, &to, lamports, blockhash);
+let base64 = kit_solana::transfer::encode_tx(&tx)?;   // canonical wire format
 ```
 
-Perps live in the Phoenix/Rise extension surface rather than the base token
-tools. Keep them paper-first:
+Transactions are built **unsigned**. That is a design rule, not a missing
+feature: the kit constructs, something the operator controls signs.
 
-```text
-perps_market(symbol)
-perps_open_interest(symbol)
-perps_paper_order(side, symbol, notional_usdc)
-perps_preflight()
-```
+## Signers
 
-## Amounts
+`SolanaSigner` is the abstraction; `SignerContext` (task-local, carried
+from the original kit) makes the current signer available to tools
+without threading it through every call.
 
-- SOL transfers use lamports.
-- SPL token amounts are raw integer units, already adjusted for decimals.
-- Slippage is in basis points.
-- Perps notional values are denominated in USDC unless a market adapter states
-  otherwise.
+| Signer | Custody | Notes |
+|---|---|---|
+| `UnsignedSigner` | none (pubkey only) | Default for read/build flows. Cannot sign; a transaction it "signs" fails cluster verification — fail-closed. |
+| `RemoteSigner` | operator's endpoint | POSTs base64 transactions/messages to an operator-run signer (optional bearer via `KIT_REMOTE_SIGNER_TOKEN`). |
+| `LocalKeypairSigner` | local keypair | The original kit's flow, behind the `local-signer` feature. Never constructed implicitly. |
 
-When decimals are unknown, call `get_spl_token_balance` or fetch token metadata
-before preparing a transfer.
+The one broadcast path is `SolanaClient::send_transaction`, reached by
+the `solana_transfer` tool only after the Jev gate proceeds, dry-run is
+off, and a real signer produced a signature.
 
-## Safety
+## State proofs and the Lean seam
 
-Transaction-producing tools do not sign directly. They create transactions
-inside `execute_solana_transaction`, which pulls the current signer from
-`SignerContext`. If no signer has been bound to the async scope, the call fails
-instead of falling back to a global key.
+`kit_solana::verify` defines:
 
-Phoenix/Rise perps must follow the same rule. Paper mode is the default, and
-live order placement requires an explicit approval gate after preflight.
+- `StateProof` — produce/check an `AccountProof` (account digest at a slot).
+- `LightVerify` — the interface a Solana **Lean client** backend
+  implements to verify state against validator-voted roots.
+- `RpcStateProof` — today's implementation: RPC reads + digest compare.
+  It detects drift; it is **not** cryptographic inclusion verification
+  and is never described as such.
 
-## RPC
-
-Set `SOLANA_RPC_URL` for production use. The public mainnet endpoint is a
-development fallback and should not be used for high-volume agent workflows.
+See [Lean](./lean.md) and the [ohr note](./ohr.md).

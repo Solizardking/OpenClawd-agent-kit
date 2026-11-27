@@ -8,9 +8,15 @@
 # Concepts
 
 - [SVM Runtime](./svm.md)
-- [Tools](./tools.md)
+- [Tools and the reasoning loop](./tools.md)
 - [SignerContext](./signer_context.md)
 - [SVM Routing](./cross_chain.md)
+
+# Integrations
+
+- [MCP: Clawd Compute + PumpAI](./mcp.md)
+- [Lean](./lean.md)
+- [The "ohr" note](./ohr.md)
 
 # Agents
 

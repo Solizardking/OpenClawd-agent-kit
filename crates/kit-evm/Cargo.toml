@@ -1,0 +1,15 @@
+[package]
+name = "kit-evm"
+description = "OpenClawd agent kit EVM + cross-chain (LiFi) rails, ported forward on current alloy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+tokio = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+thiserror = { workspace = true }
+alloy = { version = "1", features = ["provider-http", "rpc-types", "signer-local", "network"] }

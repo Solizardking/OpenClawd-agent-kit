@@ -1,52 +1,70 @@
-# Tools
+# Tools and the reasoning loop
 
-OpenClawd SVM Kit tools are regular async Rust functions annotated with
-`#[tool]` from `rig-tool-macro`.
+## The Tool trait
+
+Every capability is a `kit_core::Tool`:
 
 ```rust
-use rig_tool_macro::tool;
-
-#[tool]
-fn add(a: i32, b: i32) -> i32 {
-    a + b
+#[async_trait]
+pub trait Tool: Send + Sync {
+    fn name(&self) -> &str;
+    fn description(&self) -> &str;
+    fn input_schema(&self) -> Value;      // JSON Schema
+    fn consequential(&self) -> bool { false }
+    async fn call(&self, arguments: Value) -> Result<Value, ToolError>;
 }
 ```
 
-Attach a generated tool type to an agent:
+`consequential` is the load-bearing flag: a tool that moves funds, signs,
+trades, sends, deletes, or otherwise changes external state in a way that
+is hard to reverse. When in doubt, mark it consequential — an unknown tool
+name is also treated as consequential by the registry.
 
-```rust
-let agent = rig::providers::anthropic::Client::from_env()
-    .agent(rig::providers::anthropic::CLAUDE_3_5_SONNET)
-    .preamble("you are an SVM portfolio assistant")
-    .max_tokens(1024)
-    .tool(GetPortfolio)
-    .build();
-```
+## The reasoning loop
 
-## Transaction Tools
+`kit_core::ReasoningLoop` drives any `Reasoner` (an LLM backend, a
+scripted planner, a test double) through propose → gate → execute cycles:
 
-Transaction tools should follow this shape:
+1. **Read-only tools** run immediately.
+2. **Consequential tools** go to the Jev gate first (below).
+3. In **dry-run** (the default), a gate-cleared consequential call is
+   *simulated*: the loop records what would have run and feeds a synthetic
+   result back. The tool's `call` is never invoked.
+4. The loop emits an event transcript (`ToolExecuted`, `ToolSimulated`,
+   `ToolDenied`, `Escalated`, `Final`) for audit.
 
-```rust
-#[tool]
-pub async fn transfer_sol(to: String, amount: u64) -> anyhow::Result<String> {
-    execute_solana_transaction(move |owner| async move {
-        create_transfer_sol_tx(&Pubkey::from_str(&to)?, amount, &owner).await
-    })
-    .await
-}
-```
+## The Jev gate
 
-The helper gets the current signer from `SignerContext`, builds a transaction,
-and hands it to the configured signer implementation.
+For each consequential call, the gate asks TypeSafe Jev two questions in
+one System One request, over a state object containing the constitution,
+the tool name, its arguments, and the agent's rationale:
 
-## Tool Inputs
+- `consequential` — a `noul`: the probability that executing this call
+  changes external state irreversibly.
+- `verdict` — a `choice` over `proceed` / `deny` / `ask_human`.
 
-The tool macro works best with JSON-native parameters:
+Code then decides (thresholds in `crates/kit-core/src/gate.rs`):
 
-- `String`
-- `bool`
-- integer and floating-point numbers
+| Situation | Decision |
+|---|---|
+| Jev unconfigured or unreachable | `AskHuman` |
+| `consequential` probability < 0.5 | `Proceed` (not actually consequential) |
+| `proceed` with probability ≥ 0.6 **and** confidence ≥ 0.6 | `Proceed` |
+| `proceed` but weaker | `AskHuman` |
+| `deny` with confidence ≥ 0.5 | `Deny` |
+| `deny` but weaker | `AskHuman` |
+| `ask_human`, or no usable verdict | `AskHuman` |
 
-Parse Solana `Pubkey` values inside the tool body so invalid user input returns
-a normal tool error.
+Escalations go to a `HumanApprover`; the default implementation denies,
+so an unattended kit never executes an escalated call. Every evaluation
+is appended to an in-memory judgment log and emitted via `tracing`.
+
+## Where tools come from
+
+- `kit-solana` registers `solana_get_balance`,
+  `solana_get_token_accounts`, `solana_get_tx_status` (read-only) and
+  `solana_transfer` (consequential, only when a signer is provided).
+- `kit-mcp` registers the Clawd Compute + PumpAI catalogs, namespaced
+  (`clawdcompute__…`, `pumpai__…`), classified from MCP annotations.
+- Your own tools: implement the trait, register them, done. The gate and
+  the loop treat built-in and custom tools identically.

@@ -1,48 +1,52 @@
 # Configuration
 
-OpenClawd SVM Kit reads environment variables with `dotenv` support.
+All configuration is environment variables (see `.env.example` for the
+annotated template). The kit loads nothing implicitly beyond these, and
+every missing piece degrades toward safety, never toward permission.
 
-## Required For Agents
+## Jev gate
 
-```bash
-ANTHROPIC_API_KEY=...
-```
+| Variable | Effect |
+|---|---|
+| `TYPESAFE_API_KEY` | Enables live Jev judgments. The gate reads the key from this variable only — never from files or flags. Unset ⇒ consequential calls escalate (fail closed). |
 
-The bundled agent builder uses Anthropic through `rig-core`.
+Gate thresholds are **code**, not config: they live in
+`crates/kit-core/src/gate.rs` (`NON_CONSEQUENTIAL_BELOW`,
+`PROCEED_MIN_PROBABILITY`, `PROCEED_MIN_CONFIDENCE`, `DENY_MIN_CONFIDENCE`)
+so a deployment can't quietly loosen them with an env var.
 
-## Local Solana Signing
+## Solana
 
-```bash
-SOLANA_PRIVATE_KEY=...
-SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
-```
+| Variable | Effect |
+|---|---|
+| `SOLANA_RPC_URL` | RPC endpoint for `kit-solana` reads/builds. Default: public mainnet. Prefer a private endpoint in production. |
+| `SOLANA_PRIVATE_KEY` | Only used if a host explicitly constructs the feature-gated `LocalKeypairSigner` (`local-signer` feature). The kit never reads it implicitly. |
+| `KIT_REMOTE_SIGNER_URL` / `KIT_REMOTE_SIGNER_TOKEN` | Operator-run remote signing endpoint + optional bearer token for `RemoteSigner`. |
 
-`SOLANA_PRIVATE_KEY` is only needed when using `LocalSolanaSigner`. The RPC URL
-defaults to the public mainnet endpoint when unset.
+## MCP
 
-## HTTP Service With Privy
+| Variable | Effect |
+|---|---|
+| `CLAWD_COMPUTE_MCP_URL` | Default `https://mcp.clawdcompute.us/mcp` |
+| `PUMPAI_MCP_URL` | Default `https://pumpai.ai/mcp` |
 
-```bash
-PRIVY_APP_ID=...
-PRIVY_APP_SECRET=...
-PRIVY_VERIFICATION_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
-SOLANA_RPC_URL=...
-```
+The spend policy is **code** (`kit_mcp::SpendPolicy`, read-only default).
+Allowing state-changing MCP calls is a deliberate code change by the
+operator, not an env flip — and payments have no code path at all.
 
-When the `http` feature is enabled, user signing is delegated through Privy.
-Do not pass local private keys to the HTTP service.
+## HTTP service
 
-## Phoenix/Rise Perps
+| Variable | Effect |
+|---|---|
+| `KIT_HTTP_LIVE` | `1` lets `kit-http` execute gate-cleared consequential calls. Anything else (including unset) = dry-run service. |
 
-Perps integrations should start in paper mode:
+## Constitution
 
-```bash
-PERPS_MODE=paper
-PERPS_MARKET=SOL-PERP
-PHOENIX_PERPS_URL=...
-RISE_PERPS_URL=...
-```
+| Variable | Effect |
+|---|---|
+| `CLAWD_CONSTITUTION_PATH` | Path to an installed constitution file. Otherwise the kit searches `~/.automaton/`, `~/.clawd/`, `./constitution/`, and falls back to the byte-for-byte inline text. |
 
-Live order execution must require explicit user approval, a passing preflight,
-and a concrete market/side/notional payload. The kit should never read or print
-private keys while resolving Phoenix/Rise market context.
+## Logging
+
+`RUST_LOG` (e.g. `info`, `debug`) drives `tracing` output, including the
+gate's per-evaluation judgment records.

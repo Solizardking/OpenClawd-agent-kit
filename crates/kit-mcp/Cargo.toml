@@ -1,0 +1,16 @@
+[package]
+name = "kit-mcp"
+description = "OpenClawd agent kit MCP client: Clawd Compute gateway + PumpAI, fail-closed spend policy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+kit-core = { path = "../kit-core" }
+tokio = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }

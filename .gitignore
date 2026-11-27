@@ -207,3 +207,6 @@ target
 .cursor/
 node_modules
 target
+
+# Lean (lake build artifacts)
+lean/.lake/

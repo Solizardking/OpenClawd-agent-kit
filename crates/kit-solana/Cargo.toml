@@ -1,0 +1,30 @@
+[package]
+name = "kit-solana"
+description = "OpenClawd agent kit Solana tools on the modern split-crate SDK: reads, transfer building, signer contexts, state-proof seam"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = []
+# The original kit's local-keypair custody, kept for parity. Off by
+# default: the kit's default flows are unsigned / remote-signed.
+local-signer = ["dep:bs58"]
+
+[dependencies]
+kit-core = { path = "../kit-core" }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+base64 = { workspace = true }
+reqwest = { workspace = true }
+bs58 = { version = "0.5", optional = true }
+
+solana-sdk = "3"
+solana-rpc-client = "3"
+solana-rpc-client-api = "3"
+solana-account-decoder = "3"
+bincode = { version = "2", features = ["serde"] }

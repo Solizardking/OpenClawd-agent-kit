@@ -1,0 +1,19 @@
+[package]
+name = "kit-cli"
+description = "OpenClawd agent kit command-line interface (the `kit` binary)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "kit"
+path = "src/main.rs"
+
+[dependencies]
+kit-core = { path = "../kit-core" }
+kit-solana = { path = "../kit-solana" }
+kit-mcp = { path = "../kit-mcp" }
+tokio = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
