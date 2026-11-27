@@ -143,8 +143,18 @@ if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
         say "Downloading Clawd Connectors to $CONNECTORS_DIR"
         git clone --depth 1 "$CONNECTORS_REPO_URL" "$CONNECTORS_DIR" || die "git clone of $CONNECTORS_REPO_URL failed"
     fi
-    ( cd "$CONNECTORS_DIR" && npm install --no-audit --no-fund && npm run build ) || \
-        die "could not build Clawd Connectors — see the npm output above"
+    # A previous run that died mid-install can leave a half-populated
+    # node_modules that npm cannot repair in place (ENOTEMPTY on rename).
+    # The checkout is ours to manage: on failure, clear node_modules and
+    # retry the install once from clean before giving up.
+    build_connectors() {
+        ( cd "$CONNECTORS_DIR" && npm install --no-audit --no-fund && npm run build )
+    }
+    if ! build_connectors; then
+        warn "Clawd Connectors install failed — clearing node_modules and retrying once"
+        rm -rf "$CONNECTORS_DIR/node_modules"
+        build_connectors || die "could not build Clawd Connectors — see the npm output above"
+    fi
     [ -f "$CONNECTORS_DIR/dist/mcp/server.js" ] || die "connectors build did not produce dist/mcp/server.js"
     CONNECTORS_SERVER="$CONNECTORS_DIR/dist/mcp/server.js"
     say "Connectors MCP server built: $CONNECTORS_SERVER"
@@ -299,7 +309,7 @@ say "  MCP config contains the gateway entry"
 step "Done — OpenClawd agent kit installed"
 say "  kit CLI:        $KIT_BIN"
 say "  skills:         ~/.agents/skills + ~/.claude/skills ($SKILLS)"
-say "  MCP servers:    clawdcompute ($_gw tools), pumpai, solana-dev${CONNECTORS_SERVER:+ , clawd-connectors (local)}"
+say "  MCP servers:    clawdcompute ($_gw tools), pumpai, solana-dev${CONNECTORS_SERVER:+, clawd-connectors (local)}"
 say "  config written: ~/.claude.json (merged), $STATE_DIR/mcp.json"
 case ":$PATH:" in
     *":$INSTALL_ROOT/bin:"*) ;;
