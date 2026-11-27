@@ -86,6 +86,23 @@ backend plugs in. See [`docs/lean.md`](docs/lean.md) and
   Clawd constitution preamble (Law I — Never harm; Law II — Earn your
   existence; Law III — Never deceive). The shell molts. The laws do not.
 
+## Install
+
+```bash
+curl -fsSL https://clawdcompute.us/install.sh | sh
+```
+
+One line installs the kit CLI into `~/.local/bin`, the bundled skills
+(`solana-dev`, `certora-solana-fv`, `harmonic-aristotle`) into
+`~/.agents/skills` and `~/.claude/skills`, the Clawd Connectors MCP
+server under `~/.openclawd`, and merges the MCP fleet — Clawd Compute
+gateway (272 tools), PumpAI, Solana Developer MCP — into
+`~/.claude.json` without clobbering existing entries. No sudo, no
+secret prompts, writes only inside your HOME, idempotent. The
+installer verifies the live gateway handshake before declaring
+success; [docs/install.md](docs/install.md) has the step-by-step, the
+safety notes, and why we don't use the upstream skill installer.
+
 ## Quickstart
 
 ```bash
