@@ -11,7 +11,7 @@ The kit is a rewrite (2026-11-27) of the original single-crate
 (byte-for-byte), the signer-context design, and the scope — Solana tools,
 EVM/cross-chain rails, an optional HTTP service. What is new:
 
-- **Rust, upgraded.** Edition 2024, pinned toolchain (1.89.0), a Cargo
+- **Rust, upgraded.** Edition 2024, pinned toolchain (1.93.1), a Cargo
   workspace, and the modern split-crate Solana SDK (3.x) instead of the
   2.1.9 monolith.
 - **Jev in the reasoning loop.** TypeSafe's System One model gates every

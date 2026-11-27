@@ -3,7 +3,7 @@
 ## Requirements
 
 - **Rust** — the workspace pins its toolchain in `rust-toolchain.toml`
-  (1.89.0, edition 2024). Install [rustup](https://rustup.rs/) and the
+  (1.93.1, edition 2024). Install [rustup](https://rustup.rs/) and the
   pinned toolchain is fetched automatically on first `cargo` run.
 - **A TypeSafe API key** for live Jev gate judgments (`TYPESAFE_API_KEY`).
   Without it the kit still runs — the gate simply escalates every

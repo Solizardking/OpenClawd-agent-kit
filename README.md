@@ -99,7 +99,7 @@ cargo run -p kit-cli -- solana balance <pubkey>
 cargo run -p kit-cli -- gate check solana_transfer '{"to":"…","lamports":5000}' "pay for compute"
 ```
 
-Toolchain is pinned (`rust-toolchain.toml`, Rust 1.89.0, edition 2024).
+Toolchain is pinned (`rust-toolchain.toml`, Rust 1.93.1, edition 2024).
 
 ```bash
 cargo check            # default members
