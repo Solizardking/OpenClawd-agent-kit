@@ -1,0 +1,5 @@
+name: "local_certora_solana_fv"
+title: "Certora Formal Verification for Solana"
+description: "How an agent connects to Certora with its own key and formally verifies a Solana program with CVLR specs, from toolchain setup through cloud submission to honest verdict reporting, including the Certora platform engines (AutoProver, AI Auditor) and the REST API."
+category: "Work and knowledge"
+include_in_prompt: true

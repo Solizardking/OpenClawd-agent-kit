@@ -14,7 +14,9 @@
 
 # Integrations
 
-- [MCP: Clawd Compute + PumpAI](./mcp.md)
+- [MCP: Clawd Compute + PumpAI + Solana Developer MCP](./mcp.md)
+- [Solana.ai resources](./solana-ai.md)
+- [Formal verification](./formal-verification.md)
 - [Lean](./lean.md)
 - [The "ohr" note](./ohr.md)
 

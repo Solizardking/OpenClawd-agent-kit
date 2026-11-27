@@ -5,6 +5,12 @@ that mirror each other statement-for-statement — executable Rust models
 that run as tests today, and Lean 4 statements that a prover (or the
 emerging Solana Lean client stack) can check tomorrow.
 
+Lean is one track of the kit's wider formal-verification story —
+Certora CVLR and Harmonic Aristotle for whole Solana programs, Kani /
+property-based tests for Rust kernels. See
+[Formal verification](./formal-verification.md) for the full picture
+and the which-tool-for-which-job table.
+
 ## The Lean side
 
 `lean/` is a Lake package:
