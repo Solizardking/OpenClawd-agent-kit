@@ -5,13 +5,23 @@
 //! over HTTP POST, accepting both plain JSON and `text/event-stream`
 //! responses, with `Mcp-Session-Id` handling for stateful servers.
 //!
-//! Live-verified 2026-11-27 against both fleet servers:
+//! Live-verified 2026-11-27 against the fleet servers:
 //! - `https://mcp.clawdcompute.us/mcp` — "clawd-compute-mcp-portal" v1.0.0,
 //!   stateless, **272 tools** (portal + PumpAI mirror + equities + desk +
 //!   backpack + massive + ai). Note: the portal's edge blocks non-browser
 //!   user agents (Cloudflare 1010), so the client sends a normal UA string.
 //! - `https://pumpai.ai/mcp` — "clawd-pump" (PumpAI) v2.4.0-clawd,
 //!   session-based, **213 tools**.
+//! - `https://mcp.solana.com/mcp` — "solana-mcp" v2.0.0, stateless,
+//!   **5 tools**: the Solana Developer MCP (official docs retrieval,
+//!   semantic search, expert Q&A, and the program autofixer). Free, no API
+//!   key. Three of its tools carry `readOnlyHint: true` (`list_sections`,
+//!   `get_documentation`, `program_autofixer`); the two Q&A tools
+//!   (`Solana_Documentation_Search`, `Solana_Expert__Ask_For_Help`) ship
+//!   **no annotations**, so under the kit's fail-closed rule they are
+//!   classified consequential and refused by default — see
+//!   [`crate::toolset`]. Docs-class server, but the classification stays
+//!   annotation-driven; nothing is presumed safe.
 
 use std::sync::Arc;
 
@@ -23,6 +33,7 @@ use kit_core::ToolError;
 pub const PROTOCOL_VERSION: &str = "2025-03-26";
 pub const CLAWD_COMPUTE_MCP_URL: &str = "https://mcp.clawdcompute.us/mcp";
 pub const PUMPAI_MCP_URL: &str = "https://pumpai.ai/mcp";
+pub const SOLANA_MCP_URL: &str = "https://mcp.solana.com/mcp";
 
 /// A tool as advertised by an MCP server's `tools/list`.
 #[derive(Debug, Clone)]
@@ -95,15 +106,17 @@ impl McpClient {
         }
     }
 
-    /// The two fleet servers, with env overrides
-    /// (`CLAWD_COMPUTE_MCP_URL`, `PUMPAI_MCP_URL`).
+    /// The built-in servers, with env overrides
+    /// (`CLAWD_COMPUTE_MCP_URL`, `PUMPAI_MCP_URL`, `SOLANA_MCP_URL`).
     pub fn fleet() -> Vec<Arc<McpClient>> {
         let cc = std::env::var("CLAWD_COMPUTE_MCP_URL")
             .unwrap_or_else(|_| CLAWD_COMPUTE_MCP_URL.to_string());
         let pump = std::env::var("PUMPAI_MCP_URL").unwrap_or_else(|_| PUMPAI_MCP_URL.to_string());
+        let solana = std::env::var("SOLANA_MCP_URL").unwrap_or_else(|_| SOLANA_MCP_URL.to_string());
         vec![
             Arc::new(McpClient::new("clawdcompute", cc)),
             Arc::new(McpClient::new("pumpai", pump)),
+            Arc::new(McpClient::new("solana", solana)),
         ]
     }
 
@@ -294,5 +307,38 @@ mod tests {
         let tool = McpTool::from_json(&v).unwrap();
         assert_eq!(tool.read_only, Some(true));
         assert_eq!(tool.name, "get_balance");
+    }
+
+    #[test]
+    fn fleet_includes_solana_developer_mcp() {
+        let fleet = McpClient::fleet();
+        let namespaces: Vec<&str> = fleet.iter().map(|c| c.namespace.as_str()).collect();
+        assert_eq!(namespaces, ["clawdcompute", "pumpai", "solana"]);
+        // The Solana Developer MCP endpoint, as documented at
+        // https://mcp.solana.com (verified live 2026-11-27).
+        assert_eq!(SOLANA_MCP_URL, "https://mcp.solana.com/mcp");
+    }
+
+    #[test]
+    fn solana_tool_parsing_matches_live_annotations() {
+        // Shapes as served by solana-mcp v2.0.0 tools/list on 2026-11-27:
+        // three tools annotate readOnlyHint, the two Q&A tools do not.
+        let annotated = json!({
+            "name": "get_documentation",
+            "description": "Fetch full docs",
+            "inputSchema": {"type": "object"},
+            "annotations": {"readOnlyHint": true, "destructiveHint": false}
+        });
+        let tool = McpTool::from_json(&annotated).unwrap();
+        assert_eq!(tool.read_only, Some(true));
+        assert_eq!(tool.destructive, Some(false));
+
+        let unannotated = json!({
+            "name": "Solana_Documentation_Search",
+            "description": "Semantic search over the Solana docs corpus",
+            "inputSchema": {"type": "object"}
+        });
+        let tool = McpTool::from_json(&unannotated).unwrap();
+        assert_eq!(tool.read_only, None, "unannotated stays unannotated — the policy layer fails closed on it");
     }
 }

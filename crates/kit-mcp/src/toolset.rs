@@ -163,4 +163,32 @@ mod tests {
         assert_eq!(t.name(), "pumpai__some_tool");
         assert!(!t.consequential());
     }
+
+    #[test]
+    fn solana_developer_mcp_classification_is_annotation_driven() {
+        // Live tools/list of solana-mcp v2.0.0 (2026-11-27): 5 tools.
+        // Three annotate readOnlyHint: true; the two Q&A tools carry no
+        // annotations at all. The server is docs-class, but the kit does
+        // not presume safety: unannotated tools stay consequential and
+        // refused under the default policy.
+        let client = Arc::new(McpClient::new("solana", crate::client::SOLANA_MCP_URL));
+        let policy = SpendPolicy::default();
+
+        for name in ["list_sections", "get_documentation", "program_autofixer"] {
+            let mut t = tool(Some(true));
+            t.name = name.to_string();
+            assert!(policy.permits(&t), "{name} is annotated read-only");
+            let nt = NamespacedMcpTool::new(client.clone(), t, policy.clone());
+            assert_eq!(nt.name(), format!("solana__{name}"));
+            assert!(!nt.consequential(), "{name} skips the Jev gate");
+        }
+
+        for name in ["Solana_Documentation_Search", "Solana_Expert__Ask_For_Help"] {
+            let mut t = tool(None);
+            t.name = name.to_string();
+            assert!(!policy.permits(&t), "{name} is unannotated: fail-closed");
+            let nt = NamespacedMcpTool::new(client.clone(), t, policy.clone());
+            assert!(nt.consequential(), "{name} goes through the Jev gate");
+        }
+    }
 }

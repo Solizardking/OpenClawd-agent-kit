@@ -33,7 +33,7 @@ ready for the Solana Lean client stack.
 |---|---|
 | `kit-core` | The Clawd constitution, tool registry, the **Jev gate**, and a provider-agnostic reasoning loop. |
 | `kit-solana` | Solana reads (balance, token accounts, tx status), unsigned transfer building, signer contexts (unsigned / remote / local-parity), and the `StateProof`/`LightVerify` seam for Lean-client state verification. On the modern split-crate SDK (`solana-sdk`/`solana-rpc-client` 3.x), Rust edition 2024. |
-| `kit-mcp` | MCP client for the fleet's two servers — **Clawd Compute** (`mcp.clawdcompute.us`, 272 tools) and **PumpAI** (`pumpai.ai/mcp`, 213 tools), live-verified 2026-11-27 — behind a fail-closed spend policy. |
+| `kit-mcp` | MCP client for three built-in servers — **Clawd Compute** (`mcp.clawdcompute.us`, 272 tools), **PumpAI** (`pumpai.ai/mcp`, 213 tools), and the **Solana Developer MCP** (`mcp.solana.com`, 5 tools), live-verified 2026-11-27 — behind a fail-closed spend policy. |
 | `kit-lean` | Executable Rust models of the kit's core invariants (spend caps, gate discipline, signer policy), mirrored statement-for-statement by the Lean package in `lean/`. |
 | `kit-cli` | The `kit` binary: constitution, MCP browsing/calls, Solana reads, transfer building, gate checks, and a scripted loop demo. |
 | `kit-evm` | EVM reads + unsigned transfer requests on current alloy, plus the LiFi cross-chain client. (Workspace member; build with `-p kit-evm`.) |
@@ -94,7 +94,7 @@ cd OpenClawd-agent-kit
 cp .env.example .env   # set TYPESAFE_API_KEY and SOLANA_RPC_URL
 
 cargo run -p kit-cli -- demo          # scripted loop: read runs, transfer is gated + simulated
-cargo run -p kit-cli -- mcp list      # 272 Clawd Compute + 213 PumpAI tools
+cargo run -p kit-cli -- mcp list      # 272 Clawd Compute + 213 PumpAI + 5 Solana Developer MCP tools
 cargo run -p kit-cli -- solana balance <pubkey>
 cargo run -p kit-cli -- gate check solana_transfer '{"to":"…","lamports":5000}' "pay for compute"
 ```
@@ -107,12 +107,40 @@ cargo test             # default members
 cargo check -p kit-evm -p kit-http   # opt-in members
 ```
 
+## Solana.ai resources
+
+The kit bundles the Solana ecosystem's agent resources, researched
+live from [solana.ai](https://solana.ai) on 2026-11-27 (full page:
+[`docs/solana-ai.md`](docs/solana-ai.md); machine-readable index:
+[`docs/solana-ai-index.json`](docs/solana-ai-index.json)):
+
+- **Solana Developer MCP** (`mcp.solana.com`, 5 tools) — a built-in
+  `kit-mcp` server next to Clawd Compute and PumpAI. See
+  [`docs/mcp.md`](docs/mcp.md).
+- **Bundled skills** in [`skills/`](skills/) (provenance:
+  [`skills/SOURCES.md`](skills/SOURCES.md)): the fleet's two
+  formal-verification skills — Certora CVLR for Solana and Harmonic
+  Aristotle — vendored byte-faithful, plus an index entry for the
+  Solana Foundation's `solana-dev` skill
+  ([`skills/solana-dev/`](skills/solana-dev/); install with
+  `npx skills add solana-foundation/solana-dev-skill`).
+- **Formal verification** — the kit's FV story (Certora, Aristotle,
+  Lean, Kani/PBT) in [`docs/formal-verification.md`](docs/formal-verification.md).
+- **Indexed, not vendored:** the
+  [Awesome Solana AI](https://github.com/solana-foundation/awesome-solana-ai)
+  list, SendAI's Solana Agent Kit, the
+  [Solana Agent Registry](https://solana.com/agent-registry), and
+  solana.com's [llms.txt](https://solana.com/llms.txt) docs family —
+  living documents the kit links and reaches live instead of
+  snapshotting.
+
 ## Documentation
 
 The mdbook in `docs/` covers [installation](docs/installation.md),
 [configuration](docs/configuration.md), the
 [reasoning loop & tools](docs/tools.md), [Solana](docs/solana.md),
-[MCP](docs/mcp.md), [Lean](docs/lean.md), the
+[MCP](docs/mcp.md), [Solana.ai resources](docs/solana-ai.md),
+[formal verification](docs/formal-verification.md), [Lean](docs/lean.md), the
 [ohr note](docs/ohr.md), [signer contexts](docs/signer_context.md), and
 the [HTTP service](docs/http_service.md).
 
