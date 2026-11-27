@@ -57,7 +57,7 @@ through.)
 
 The "Agent Skills" card resolves to the Solana Foundation's
 [solana-dev-skill](https://github.com/solana-foundation/solana-dev-skill)
-(MIT): one comprehensive Agent Skill (`SKILL.md` + ~30 reference
+(MIT): one comprehensive Agent Skill (`SKILL.md` + 36 reference
 files) covering `@solana/kit`, wallet UI, web3.js v3 interop, Anchor
 1.2.x / Pinocchio programs, Surfpool + LiteSVM/Mollusk testing,
 Codama codegen, security patterns, and toolchain compatibility.
@@ -69,9 +69,11 @@ npx skills add solana-foundation/solana-dev-skill
 
 It is also served as a single file at
 [solana.com/SKILL.md](https://solana.com/SKILL.md). **In this kit:**
-indexed at [`skills/solana-dev/`](../skills/solana-dev/) with
-provenance — byte-vendoring is pending for the reasons recorded in
-[`skills/SOURCES.md`](../skills/SOURCES.md).
+vendored byte-faithful at
+[`skills/solana-dev/`](../skills/solana-dev/) (SKILL.md + 36
+reference files from upstream commit `c9da2624`, plus the MIT
+LICENSE; provenance and verification in
+[`skills/SOURCES.md`](../skills/SOURCES.md)).
 
 ## The index: Awesome Solana AI
 

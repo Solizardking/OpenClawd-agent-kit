@@ -120,10 +120,10 @@ live from [solana.ai](https://solana.ai) on 2026-11-27 (full page:
 - **Bundled skills** in [`skills/`](skills/) (provenance:
   [`skills/SOURCES.md`](skills/SOURCES.md)): the fleet's two
   formal-verification skills — Certora CVLR for Solana and Harmonic
-  Aristotle — vendored byte-faithful, plus an index entry for the
-  Solana Foundation's `solana-dev` skill
-  ([`skills/solana-dev/`](skills/solana-dev/); install with
-  `npx skills add solana-foundation/solana-dev-skill`).
+  Aristotle — vendored byte-faithful, plus the Solana Foundation's
+  `solana-dev` skill ([`skills/solana-dev/`](skills/solana-dev/)),
+  also vendored byte-faithful from upstream (or install it anywhere
+  with `npx skills add solana-foundation/solana-dev-skill`).
 - **Formal verification** — the kit's FV story (Certora, Aristotle,
   Lean, Kani/PBT) in [`docs/formal-verification.md`](docs/formal-verification.md).
 - **Indexed, not vendored:** the
