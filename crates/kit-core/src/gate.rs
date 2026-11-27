@@ -194,14 +194,13 @@ impl JevGate {
         }
 
         // A call Jev judges not-consequential may proceed without escalation.
-        if let Some(p) = consequential {
-            if p < NON_CONSEQUENTIAL_BELOW {
+        if let Some(p) = consequential
+            && p < NON_CONSEQUENTIAL_BELOW {
                 record.decision = GateDecision::Proceed;
                 record.reason =
                     format!("Jev judged the call not consequential (p={p:.2} < {NON_CONSEQUENTIAL_BELOW})");
                 return record;
             }
-        }
 
         match verdict {
             Some(("proceed", confidence, probabilities)) => {

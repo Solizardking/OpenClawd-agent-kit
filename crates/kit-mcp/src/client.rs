@@ -242,11 +242,10 @@ impl McpClient {
 /// either a single JSON document or an SSE stream of `data:` lines.
 pub fn parse_rpc_message(body: &str, id: u64) -> Option<Value> {
     let trimmed = body.trim();
-    if trimmed.starts_with('{') {
-        if let Ok(v) = serde_json::from_str::<Value>(trimmed) {
+    if trimmed.starts_with('{')
+        && let Ok(v) = serde_json::from_str::<Value>(trimmed) {
             return Some(v);
         }
-    }
     let mut fallback = None;
     for line in body.lines() {
         let line = line.trim();

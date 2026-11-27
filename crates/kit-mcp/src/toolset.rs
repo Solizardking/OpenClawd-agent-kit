@@ -24,6 +24,7 @@ use kit_core::{Tool, ToolError, ToolRegistry};
 use crate::client::{McpClient, McpTool};
 
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub struct SpendPolicy {
     /// Permit calling tools that are not annotated read-only. Default
     /// `false`: the client is a catalog + read-only client.
@@ -33,14 +34,6 @@ pub struct SpendPolicy {
     pub payments_enabled: bool,
 }
 
-impl Default for SpendPolicy {
-    fn default() -> Self {
-        Self {
-            allow_state_changing_calls: false,
-            payments_enabled: false,
-        }
-    }
-}
 
 impl SpendPolicy {
     /// May this tool be called at all under the policy?

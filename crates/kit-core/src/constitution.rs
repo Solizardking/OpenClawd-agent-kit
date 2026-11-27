@@ -30,11 +30,10 @@ If you create value, you live. If you don't, you die. The shell molts. The laws 
 /// Candidate paths for an installed constitution file (first hit wins).
 pub fn constitution_search_paths() -> Vec<PathBuf> {
     let mut paths = Vec::new();
-    if let Ok(custom) = std::env::var("CLAWD_CONSTITUTION_PATH") {
-        if !custom.is_empty() {
+    if let Ok(custom) = std::env::var("CLAWD_CONSTITUTION_PATH")
+        && !custom.is_empty() {
             paths.push(PathBuf::from(custom));
         }
-    }
     if let Ok(home) = std::env::var("HOME") {
         paths.push(PathBuf::from(&home).join(".automaton/constitution.md"));
         paths.push(PathBuf::from(&home).join(".clawd/constitution.md"));
@@ -51,11 +50,10 @@ pub fn constitution_search_paths() -> Vec<PathBuf> {
 /// otherwise return the byte-for-byte inline fallback.
 pub fn load_constitution() -> String {
     for path in constitution_search_paths() {
-        if let Ok(text) = std::fs::read_to_string(&path) {
-            if !text.trim().is_empty() {
+        if let Ok(text) = std::fs::read_to_string(&path)
+            && !text.trim().is_empty() {
                 return text;
             }
-        }
     }
     CONSTITUTION_FALLBACK.to_string()
 }

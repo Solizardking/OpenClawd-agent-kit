@@ -44,11 +44,10 @@ async fn cmd_mcp_list(server_filter: Option<String>) -> Result<()> {
     let mut registry = ToolRegistry::new();
     let clients = McpClient::fleet();
     for client in &clients {
-        if let Some(f) = &server_filter {
-            if &client.namespace != f {
+        if let Some(f) = &server_filter
+            && &client.namespace != f {
                 continue;
             }
-        }
         match client.initialize().await {
             Ok(info) => println!(
                 "== {} — {} v{} — protocol {}",
